@@ -5,8 +5,6 @@ import com.hines.james.multitenancywithspring.multitenancy.core.ThreadLocalStora
 import com.hines.james.multitenancywithspring.properties.DataSourceProperties;
 import com.hines.james.multitenancywithspring.properties.MultitenancyDataSource;
 import com.hines.james.multitenancywithspring.repositories.UserRepository;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
