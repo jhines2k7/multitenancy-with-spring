@@ -5,10 +5,15 @@ import com.hines.james.multitenancywithspring.multitenancy.core.ThreadLocalStora
 import com.hines.james.multitenancywithspring.properties.DataSourceProperties;
 import com.hines.james.multitenancywithspring.properties.MultitenancyDataSource;
 import com.hines.james.multitenancywithspring.repositories.UserRepository;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Controller    // This means that this class is a Controller
 @RequestMapping(path="/demo") // This means URL's start with /demo (after Application path)
@@ -28,13 +33,16 @@ public class MainController {
         n.setName(name);
         n.setEmail(email);
 
-        for (MultitenancyDataSource multitenancyDataSource: dataSourceProperties.getDataSources()) {
-            if(!multitenancyDataSource.getName().equals("userdb3")){
-                ThreadLocalStorage.setTenantName(multitenancyDataSource.getName());
-
-                userRepository.save(n);
+        ExecutorService executor= Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        try{
+            for (MultitenancyDataSource multitenancyDataSource: dataSourceProperties.getDataSources()){
+                executor.execute(new PersistenceThread(multitenancyDataSource.getName(), n));
             }
+        }catch(Exception err){
+            err.printStackTrace();
         }
+
+        executor.shutdown(); // once you are done with ExecutorService
 
         return "Saved";
     }
@@ -44,5 +52,19 @@ public class MainController {
         ThreadLocalStorage.setTenantName(headers.get("x-tenantid").get(0));
         // This returns a JSON or XML with the users
         return userRepository.findAll();
+    }
+
+    @AllArgsConstructor
+    @Data
+    class PersistenceThread implements Runnable {
+        private String tenantName;
+        private User user;
+
+        @Override
+        public void run() {
+            ThreadLocalStorage.setTenantName(tenantName);
+
+            userRepository.save(user);
+        }
     }
 }
