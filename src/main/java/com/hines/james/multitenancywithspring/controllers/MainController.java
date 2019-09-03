@@ -1,14 +1,12 @@
 package com.hines.james.multitenancywithspring.controllers;
 
 import com.hines.james.multitenancywithspring.entities.User;
+import com.hines.james.multitenancywithspring.multitenancy.core.ThreadLocalStorage;
 import com.hines.james.multitenancywithspring.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 @Controller    // This means that this class is a Controller
 @RequestMapping(path="/demo") // This means URL's start with /demo (after Application path)
@@ -18,9 +16,11 @@ public class MainController {
     private UserRepository userRepository;
 
     @PostMapping(path="/add") // Map ONLY POST Requests
-    public @ResponseBody String addNewUser (@RequestParam String name, @RequestParam String email) {
+    public @ResponseBody String addNewUser (@RequestParam String name, @RequestParam String email, @RequestHeader HttpHeaders headers) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
+
+        ThreadLocalStorage.setTenantName(headers.get("x-tenantid").get(0));
 
         User n = new User();
         n.setName(name);

@@ -1,26 +1,24 @@
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: validate
-  datasource:
-#    userdb1:
-    url: jdbc:mysql://165.227.186.184:3306/userdb
-    username: multitenancyuser
-    password: multitenancypassword
-    driver-class-name: com.mysql.jdbc.Driver
-userdb2:
-  datasource:
-    url: jdbc:mysql://165.227.177.255:3307/userdb
-    username: multitenancyuser
-    password: multitenancypassword
-    driver-class-name: com.mysql.jdbc.Driver
-userdb3:
-  url: jdbc:mysql://165.227.190.50:3308/userdb
-  username: multitenancyuser
-  password: multitenancypassword
-userdb4:
-  url: jdbc:mysql://165.227.190.200:3309/userdb
-  username: multitenancyuser
-  password: multitenancypassword
+
+com:
+  hines:
+    james:
+      datasources:
+        - name: userdb1
+          url: jdbc:mysql://165.227.186.184:3306/userdb
+          username: multitenancyuser
+          password: multitenancypassword
+        - name: userdb2
+          url: jdbc:mysql://165.227.177.255:3307/userdb
+          username: multitenancyuser
+          password: multitenancypassword
+        - name: userdb3
+          url: jdbc:mysql://165.227.190.50:3308/userdb
+          username: multitenancyuser
+          password: multitenancypassword
+        - name: userdb4
+          url: jdbc:mysql://165.227.190.200:3309/userdb
+          username: multitenancyuser
+          password: multitenancypassword
 
 
