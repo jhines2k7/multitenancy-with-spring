@@ -65,6 +65,8 @@ public class MainController {
             ThreadLocalStorage.setTenantName(tenantName);
 
             userRepository.save(user);
+
+            ThreadLocalStorage.clear();
         }
     }
 }
