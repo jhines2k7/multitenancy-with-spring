@@ -2,7 +2,10 @@ package com.hines.james.multitenancywithspring;
 
 import com.hines.james.multitenancywithspring.multitenancy.core.ThreadLocalStorage;
 import com.hines.james.multitenancywithspring.multitenancy.routing.TenantAwareRoutingSource;
+import com.hines.james.multitenancywithspring.properties.DataSourceProperties;
+import com.hines.james.multitenancywithspring.properties.MultitenancyDataSource;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
@@ -18,6 +21,9 @@ import java.util.Properties;
 @SpringBootApplication
 @EnableTransactionManagement
 public class MultitenancyWithSpringApplication extends SpringBootServletInitializer {
+    @Autowired
+    private DataSourceProperties dataSourceProperties;
+
 	public static void main(String[] args) {
 		new MultitenancyWithSpringApplication()
 				.configure(new SpringApplicationBuilder(MultitenancyWithSpringApplication.class))
@@ -32,40 +38,28 @@ public class MultitenancyWithSpringApplication extends SpringBootServletInitiali
 
 		Map<Object,Object> targetDataSources = new HashMap<>();
 
-		targetDataSources.put("userDbOne", userDbOne());
-		targetDataSources.put("userDbTwo", userDbTwo());
+        for (MultitenancyDataSource multitenancyDataSource: dataSourceProperties.getDataSources()) {
+            targetDataSources.put(multitenancyDataSource.getName(), createDataSource(multitenancyDataSource));
+        }
 
 		dataSource.setTargetDataSources(targetDataSources);
 
 		dataSource.afterPropertiesSet();
 
-		ThreadLocalStorage.setTenantName("userDbOne");
+		ThreadLocalStorage.setTenantName(dataSourceProperties.getDataSources().get(0).getName());
 
 		return dataSource;
 	}
 
-	public DataSource userDbOne() {
+	public DataSource createDataSource(MultitenancyDataSource multitenancyDataSource) {
 
 		HikariDataSource dataSource = new HikariDataSource();
 
 		dataSource.setInitializationFailTimeout(0);
 		dataSource.setMaximumPoolSize(5);
-		dataSource.setJdbcUrl("jdbc:mysql://165.227.186.184:3306/userdb");
-		dataSource.setUsername("multitenancyuser");
-		dataSource.setPassword("multitenancypassword");
-
-		return dataSource;
-	}
-
-	public DataSource userDbTwo() {
-
-		HikariDataSource dataSource = new HikariDataSource();
-
-		dataSource.setInitializationFailTimeout(0);
-		dataSource.setMaximumPoolSize(5);
-		dataSource.setJdbcUrl("jdbc:mysql://165.227.177.255:3307/userdb");
-		dataSource.setUsername("multitenancyuser");
-		dataSource.setPassword("multitenancypassword");
+		dataSource.setJdbcUrl(multitenancyDataSource.getUrl());
+		dataSource.setUsername(multitenancyDataSource.getUsername());
+		dataSource.setPassword(multitenancyDataSource.getPassword());
 
 		return dataSource;
 	}
