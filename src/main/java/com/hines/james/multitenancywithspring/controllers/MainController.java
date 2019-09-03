@@ -36,7 +36,13 @@ public class MainController {
         ExecutorService executor= Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         try{
             for (MultitenancyDataSource multitenancyDataSource: dataSourceProperties.getDataSources()){
-                executor.execute(new PersistenceThread(multitenancyDataSource.getName(), n));
+                executor.execute(() -> {
+                    ThreadLocalStorage.setTenantName(multitenancyDataSource.getName());
+
+                    userRepository.save(n);
+
+                    ThreadLocalStorage.clear();
+                });
             }
         }catch(Exception err){
             err.printStackTrace();
@@ -52,21 +58,5 @@ public class MainController {
         ThreadLocalStorage.setTenantName(headers.get("x-tenantid").get(0));
         // This returns a JSON or XML with the users
         return userRepository.findAll();
-    }
-
-    @AllArgsConstructor
-    @Data
-    class PersistenceThread implements Runnable {
-        private String tenantName;
-        private User user;
-
-        @Override
-        public void run() {
-            ThreadLocalStorage.setTenantName(tenantName);
-
-            userRepository.save(user);
-
-            ThreadLocalStorage.clear();
-        }
     }
 }
